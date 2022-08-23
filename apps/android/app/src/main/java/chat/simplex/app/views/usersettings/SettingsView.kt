@@ -58,7 +58,7 @@ fun SettingsView(chatModel: ChatModel, setPerformLA: (Boolean) -> Unit) {
       showModal = { modalView -> { ModalManager.shared.showModal { modalView(chatModel) } } },
       showSettingsModal = { modalView -> { ModalManager.shared.showCustomModal { close ->
         ModalView(close = close, modifier = Modifier,
-          background = if (isSystemInDarkTheme()) MaterialTheme.colors.background else SettingsBackgroundLight) {
+          background = if (isInDarkTheme()) MaterialTheme.colors.background else SettingsBackgroundLight) {
           modalView(chatModel)
         }
       } } },
@@ -69,9 +69,15 @@ fun SettingsView(chatModel: ChatModel, setPerformLA: (Boolean) -> Unit) {
           ModalManager.shared.showCustomModal { close ->
             ModalView(
               close = close, modifier = Modifier,
-              background = if (isSystemInDarkTheme()) MaterialTheme.colors.background else SettingsBackgroundLight
+              background = if (isInDarkTheme()) MaterialTheme.colors.background else SettingsBackgroundLight
             ) {
-              AppearanceView()
+              AppearanceView { content ->
+                ModalManager.shared.showCustomModal { close ->
+                  ModalView(close,
+                    background = if (isInDarkTheme()) MaterialTheme.colors.background else SettingsBackgroundLight)
+                  { content(close) }
+                }
+              }
             }
           }
         }
@@ -88,7 +94,7 @@ val simplexTeamUri =
 //fun showSectionedModal(chatModel: ChatModel, modalView: (@Composable (ChatModel) -> Unit)) {
 //  ModalManager.shared.showCustomModal { close ->
 //    ModalView(close = close, modifier = Modifier,
-//      background = if (isSystemInDarkTheme()) MaterialTheme.colors.background else SettingsBackgroundLight) {
+//      background = if (isInDarkTheme()) MaterialTheme.colors.background else SettingsBackgroundLight) {
 //      modalView(chatModel)
 //    }
 //  }
@@ -114,7 +120,7 @@ fun SettingsLayout(
     Column(
       Modifier
         .fillMaxSize()
-        .background(if (isSystemInDarkTheme()) MaterialTheme.colors.background else SettingsBackgroundLight)
+        .background(if (isInDarkTheme()) MaterialTheme.colors.background else SettingsBackgroundLight)
         .padding(top = 16.dp)
     ) {
       Text(
