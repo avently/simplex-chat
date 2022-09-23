@@ -463,7 +463,7 @@
     <string name="icon_descr_call_connecting">Соединяющийся звонок</string>
     <string name="icon_descr_call_progress">Текущий звонок</string>
     <string name="icon_descr_call_ended">Звонок завершен</string>
-    <string name="answer_call">Принять звонок</string>
+    <string name="answer_call">Принять звонок TEST</string>
     <!-- Message integrity -->
     <string name="integrity_msg_skipped"><xliff:g id="connection ID" example="1">%1$d</xliff:g> пропущенных сообщений</string>
     <string name="integrity_msg_bad_hash">ошибка хэш сообщения</string>
