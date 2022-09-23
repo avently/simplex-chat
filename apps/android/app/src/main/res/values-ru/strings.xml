@@ -623,7 +623,7 @@
     <string name="alert_title_group_invitation_expired">Приглашение истекло!</string>
     <string name="alert_message_group_invitation_expired">Приглашение в группу больше не действительно, оно было удалено отправителем.</string>
     <string name="alert_title_no_group">Группа не найдена!</string>
-    <string name="alert_message_no_group">Эта группа больше не существует.</string>
+    <string name="alert_message_no_group">Эта группа больше не существует. Да.</string>
     <string name="alert_title_cant_invite_contacts">Нельзя пригласить контакты!</string>
     <string name="alert_title_cant_invite_contacts_descr">Вы используете инкогнито профиль для этой группы - чтобы предотвратить раскрытие вашего основного профиля, приглашать контакты не разрешено</string>
     <!-- CIGroupInvitationView.kt -->
