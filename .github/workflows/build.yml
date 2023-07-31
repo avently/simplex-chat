@@ -9,6 +9,7 @@ on:
     tags:
       - "v*"
   pull_request:
+  workflow_dispatch:
 
 jobs:
   prepare-release:
@@ -49,18 +50,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
-            cache_path: ~/.cabal/store
-            asset_name: simplex-chat-ubuntu-20_04-x86-64
+          # - os: ubuntu-20.04
+          #   cache_path: ~/.cabal/store
+          #   asset_name: simplex-chat-ubuntu-20_04-x86-64
+          #   desktop_asset_name: simplex-desktop-ubuntu-20_04-x86-64.deb
           - os: ubuntu-22.04
             cache_path: ~/.cabal/store
             asset_name: simplex-chat-ubuntu-22_04-x86-64
-          - os: macos-latest
-            cache_path: ~/.cabal/store
-            asset_name: simplex-chat-macos-x86-64
-          - os: windows-latest
-            cache_path: C:/cabal
-            asset_name: simplex-chat-windows-x86-64
+            desktop_asset_name: simplex-desktop-ubuntu-22_04-x86-64.deb
+          # - os: macos-latest
+          #   cache_path: ~/.cabal/store
+          #   asset_name: simplex-chat-macos-x86-64
+          #   desktop_asset_name: simplex-desktop-macos-x86-64.dmg
+          # - os: windows-latest
+          #   cache_path: C:/cabal
+          #   asset_name: simplex-chat-windows-x86-64
+          #   desktop_asset_name: simplex-desktop-windows-x86-64.msi
     steps:
       - name: Configure pagefile (Windows)
         if: matrix.os == 'windows-latest'
@@ -111,28 +116,59 @@ jobs:
           echo "package direct-sqlcipher" >> cabal.project.local
           echo "    flags: +openssl"      >> cabal.project.local
 
-      - name: Unix build
-        id: unix_build
+      - name: Unix build CLI
+        id: unix_cli_build
         if: matrix.os != 'windows-latest'
         shell: bash
         run: |
           cabal build --enable-tests
           echo "::set-output name=bin_path::$(cabal list-bin simplex-chat)"
+ 
+      - name: Linux build desktop
+        id: unix_desktop_build
+        if: matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04'
+        shell: bash
+        run: |
+          scripts/desktop/build-lib-linux.sh
+          cd apps/multiplatfrom
+          ./gradlew packageDeb
+          echo "::set-output name=package_path::$PWD/release/main/deb/simplex_*_amd64.deb"
+
+      - name: Mac build desktop
+        id: unix_desktop_build
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          scripts/desktop/build-lib-mac.sh
+          cd apps/multiplatfrom
+          ./gradlew packageDeb
+          echo "::set-output name=package_path::$PWD/release/main/dmg/simplex-*.dmg"
 
       - name: Unix upload binary to release
         if: startsWith(github.ref, 'refs/tags/v') && matrix.os != 'windows-latest'
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ steps.unix_build.outputs.bin_path }}
+          file: ${{ steps.unix_cli_build.outputs.bin_path }}
           asset_name: ${{ matrix.asset_name }}
           tag: ${{ github.ref }}
 
-      - name: Unix test
+      - name: Unix upload desktop package to release
+        #if: startsWith(github.ref, 'refs/tags/v') && matrix.os != 'windows-latest'
         if: matrix.os != 'windows-latest'
-        timeout-minutes: 30
-        shell: bash
-        run: cabal test --test-show-details=direct
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ steps.unix_desktop_build.outputs.package_path }}
+          asset_name: ${{ matrix.desktop_asset_name }}
+          tag: test
+
+
+#      - name: Unix test
+#        if: matrix.os != 'windows-latest'
+#        timeout-minutes: 30
+#        shell: bash
+#        run: cabal test --test-show-details=direct
 
       # Unix /
 
