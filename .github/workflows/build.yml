@@ -1,7 +1,7 @@
 name: build
 
 on:
-  workflow_dispatch:
+  workflow_dispatch
 
 jobs:
   prepare-release:
@@ -115,7 +115,7 @@ jobs:
         run: |
           cabal build --enable-tests
           echo "::set-output name=bin_path::$(cabal list-bin simplex-chat)"
- 
+
       - name: Linux build desktop
         id: unix_desktop_build
         if: matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04'
