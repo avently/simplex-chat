@@ -124,6 +124,11 @@ jobs:
       - name: Linux build desktop
         id: linux_desktop_build
         if: matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04'
+        uses: actions/setup-java@v3
+          with:
+            distribution: 'corretto'
+            java-version: '17'
+            cache: 'gradle'
         shell: bash
         run: |
           scripts/desktop/build-lib-linux.sh
@@ -134,6 +139,11 @@ jobs:
       - name: Mac build desktop
         id: mac_desktop_build
         if: matrix.os == 'macos-latest'
+        uses: actions/setup-java@v3
+          with:
+            distribution: 'corretto'
+            java-version: '17'
+            cache: 'gradle'
         shell: bash
         run: |
           scripts/desktop/build-lib-mac.sh
