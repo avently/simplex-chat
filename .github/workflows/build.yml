@@ -56,23 +56,23 @@ jobs:
           # - os: ubuntu-20.04
           #   cache_path: ~/.cabal/store
           #   asset_name: simplex-chat-ubuntu-20_04-x86-64
-          #   desktop_asset_name: simplex-desktop-ubuntu-20_04-x86-64.deb
-          #   appimage_asset_name: simplex-chat-linux-x86-64.AppImage
+          #   desktop_asset_name: simplex-desktop-ubuntu-20_04-x86_64.deb
+          #   appimage_asset_name: simplex-chat-linux-x86_64.AppImage
           - os: ubuntu-22.04
             cache_path: ~/.cabal/store
             asset_name: simplex-chat-ubuntu-22_04-x86-64
-            desktop_asset_name: simplex-desktop-ubuntu-22_04-x86-64.deb
-            appimage_asset_name: simplex-chat-linux-x86-64.AppImage
+            desktop_asset_name: simplex-desktop-ubuntu-22_04-x86_64.deb
+            appimage_asset_name: simplex-chat-linux-x86_64.AppImage
           # - os: macos-latest
           #   cache_path: ~/.cabal/store
           #   asset_name: simplex-chat-macos-x86-64
-          #   desktop_asset_name: simplex-desktop-macos-x86-64.dmg
-          #   appimage_asset_name: simplex-chat-macos-x86-64.AppImage
+          #   desktop_asset_name: simplex-desktop-macos-x86_64.dmg
+          #   appimage_asset_name: simplex-chat-macos-x86_64.AppImage
           # - os: windows-latest
           #   cache_path: C:/cabal
           #   asset_name: simplex-chat-windows-x86-64
-          #   desktop_asset_name: simplex-desktop-windows-x86-64.msi
-          #   appimage_asset_name: simplex-chat-windows-x86-64.AppImage
+          #   desktop_asset_name: simplex-desktop-windows-x86_64.msi
+          #   appimage_asset_name: simplex-chat-windows-x86_64.AppImage
     steps:
       - name: Configure pagefile (Windows)
         if: matrix.os == 'windows-latest'
