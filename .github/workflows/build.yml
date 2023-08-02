@@ -16,9 +16,6 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
-      - name: Install dependencies
-        run: sudo apt install -y desktop-file-utils
-
       - name: Clone project
         uses: actions/checkout@v3
 
@@ -110,6 +107,10 @@ jobs:
           echo "    extra-include-dirs: /usr/local/opt/openssl@1.1/include" >> cabal.project.local
           echo "    extra-lib-dirs: /usr/local/opt/openssl@1.1/lib"         >> cabal.project.local
           echo "    flags: +openssl"                                        >> cabal.project.local
+
+      - name: Install AppImage dependencies
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-22.04'
+        run: sudo apt install -y desktop-file-utils
 
       - name: Install pkg-config for Mac
         if: matrix.os == 'macos-latest'
