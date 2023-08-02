@@ -54,18 +54,22 @@ jobs:
             cache_path: ~/.cabal/store
             asset_name: simplex-chat-ubuntu-20_04-x86-64
             desktop_asset_name: simplex-desktop-ubuntu-20_04-x86-64.deb
-          - os: ubuntu-22.04
-            cache_path: ~/.cabal/store
-            asset_name: simplex-chat-ubuntu-22_04-x86-64
-            desktop_asset_name: simplex-desktop-ubuntu-22_04-x86-64.deb
-          - os: macos-latest
-            cache_path: ~/.cabal/store
-            asset_name: simplex-chat-macos-x86-64
-            desktop_asset_name: simplex-desktop-macos-x86-64.dmg
+            appimage_asset_name: simplex-chat-linux-x86-64.AppImage
+          # - os: ubuntu-22.04
+          #   cache_path: ~/.cabal/store
+          #   asset_name: simplex-chat-ubuntu-22_04-x86-64
+          #   desktop_asset_name: simplex-desktop-ubuntu-22_04-x86-64.deb
+          #   appimage_asset_name: simplex-chat-linux-x86-64.AppImage
+          # - os: macos-latest
+          #   cache_path: ~/.cabal/store
+          #   asset_name: simplex-chat-macos-x86-64
+          #   desktop_asset_name: simplex-desktop-macos-x86-64.dmg
+          #   appimage_asset_name: simplex-chat-macos-x86-64.AppImage
           # - os: windows-latest
           #   cache_path: C:/cabal
           #   asset_name: simplex-chat-windows-x86-64
           #   desktop_asset_name: simplex-desktop-windows-x86-64.msi
+          #   appimage_asset_name: simplex-chat-windows-x86-64.AppImage
     steps:
       - name: Configure pagefile (Windows)
         if: matrix.os == 'windows-latest'
@@ -147,6 +151,14 @@ jobs:
           cd apps/multiplatform
           ./gradlew packageDeb
           echo "::set-output name=package_path::$(echo $PWD/release/main/deb/simplex_*_amd64.deb)"
+      
+      - name: Linux make AppImage
+        id: linux_appimage_build
+        if: startsWith(github.ref, 'refs/tags/v') && (matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04')
+        shell: bash
+        run: |
+          scripts/desktop/make-appimage-linux.sh
+          echo "::set-output name=appimage_path::$(echo $PWD/apps/multiplatform/release/main/*imple*.AppImage)"
 
       - name: Mac build desktop
         id: mac_desktop_build
@@ -174,6 +186,15 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ steps.linux_desktop_build.outputs.package_path }}
           asset_name: ${{ matrix.desktop_asset_name }}
+          tag: ${{ github.ref }}
+
+      - name: Linux upload AppImage to release
+        if: startsWith(github.ref, 'refs/tags/v') && (matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04')
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ steps.linux_appimage_build.outputs.appimage_path }}
+          asset_name: ${{ matrix.appimage_asset_name }}
           tag: ${{ github.ref }}
 
       - name: Mac upload desktop package to release
