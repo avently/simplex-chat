@@ -16,6 +16,9 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
+      - name: Install dependencies
+        run: sudo apt install -y desktop-file-utils
+
       - name: Clone project
         uses: actions/checkout@v3
 
@@ -50,16 +53,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
-            cache_path: ~/.cabal/store
-            asset_name: simplex-chat-ubuntu-20_04-x86-64
-            desktop_asset_name: simplex-desktop-ubuntu-20_04-x86-64.deb
-            appimage_asset_name: simplex-chat-linux-x86-64.AppImage
-          # - os: ubuntu-22.04
+          # - os: ubuntu-20.04
           #   cache_path: ~/.cabal/store
-          #   asset_name: simplex-chat-ubuntu-22_04-x86-64
-          #   desktop_asset_name: simplex-desktop-ubuntu-22_04-x86-64.deb
+          #   asset_name: simplex-chat-ubuntu-20_04-x86-64
+          #   desktop_asset_name: simplex-desktop-ubuntu-20_04-x86-64.deb
           #   appimage_asset_name: simplex-chat-linux-x86-64.AppImage
+          - os: ubuntu-22.04
+            cache_path: ~/.cabal/store
+            asset_name: simplex-chat-ubuntu-22_04-x86-64
+            desktop_asset_name: simplex-desktop-ubuntu-22_04-x86-64.deb
+            appimage_asset_name: simplex-chat-linux-x86-64.AppImage
           # - os: macos-latest
           #   cache_path: ~/.cabal/store
           #   asset_name: simplex-chat-macos-x86-64
@@ -154,7 +157,7 @@ jobs:
       
       - name: Linux make AppImage
         id: linux_appimage_build
-        if: startsWith(github.ref, 'refs/tags/v') && (matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04')
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-22.04'
         shell: bash
         run: |
           scripts/desktop/make-appimage-linux.sh
