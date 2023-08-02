@@ -9,7 +9,6 @@ on:
     tags:
       - "v*"
   pull_request:
-  workflow_dispatch:
 
 jobs:
   prepare-release:
@@ -50,26 +49,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # - os: ubuntu-20.04
-          #   cache_path: ~/.cabal/store
-          #   asset_name: simplex-chat-ubuntu-20_04-x86-64
-          #   desktop_asset_name: simplex-desktop-ubuntu-20_04-x86_64.deb
-          #   appimage_asset_name: simplex-chat-linux-x86_64.AppImage
+          - os: ubuntu-20.04
+            cache_path: ~/.cabal/store
+            asset_name: simplex-chat-ubuntu-20_04-x86-64
+            desktop_asset_name: simplex-desktop-ubuntu-20_04-x86_64.deb
           - os: ubuntu-22.04
             cache_path: ~/.cabal/store
             asset_name: simplex-chat-ubuntu-22_04-x86-64
             desktop_asset_name: simplex-desktop-ubuntu-22_04-x86_64.deb
-            appimage_asset_name: simplex-chat-linux-x86_64.AppImage
-          # - os: macos-latest
-          #   cache_path: ~/.cabal/store
-          #   asset_name: simplex-chat-macos-x86-64
-          #   desktop_asset_name: simplex-desktop-macos-x86_64.dmg
-          #   appimage_asset_name: simplex-chat-macos-x86_64.AppImage
-          # - os: windows-latest
-          #   cache_path: C:/cabal
-          #   asset_name: simplex-chat-windows-x86-64
-          #   desktop_asset_name: simplex-desktop-windows-x86_64.msi
-          #   appimage_asset_name: simplex-chat-windows-x86_64.AppImage
+          - os: macos-latest
+            cache_path: ~/.cabal/store
+            asset_name: simplex-chat-macos-x86-64
+            desktop_asset_name: simplex-desktop-macos-x86_64.dmg
+          - os: windows-latest
+            cache_path: C:/cabal
+            asset_name: simplex-chat-windows-x86-64
+            desktop_asset_name: simplex-desktop-windows-x86_64.msi
     steps:
       - name: Configure pagefile (Windows)
         if: matrix.os == 'windows-latest'
@@ -124,19 +119,13 @@ jobs:
           echo "package direct-sqlcipher" >> cabal.project.local
           echo "    flags: +openssl"      >> cabal.project.local
 
-      # - name: Unix build CLI
-      #   id: unix_cli_build
-      #   if: matrix.os != 'windows-latest'
-      #   shell: bash
-      #   run: |
-      #     cabal build --enable-tests
-      #     echo "::set-output name=bin_path::$(cabal list-bin simplex-chat)"
-
-      # - name: Unix test
-      #   if: matrix.os != 'windows-latest'
-      #   timeout-minutes: 30
-      #   shell: bash
-      #   run: cabal test --test-show-details=direct
+      - name: Unix build CLI
+        id: unix_cli_build
+        if: matrix.os != 'windows-latest'
+        shell: bash
+        run: |
+          cabal build --enable-tests
+          echo "::set-output name=bin_path::$(cabal list-bin simplex-chat)"
 
       - name: Setup Java
         if: startsWith(github.ref, 'refs/tags/v')
@@ -174,14 +163,14 @@ jobs:
           ./gradlew packageDmg
           echo "::set-output name=package_path::$(echo $PWD/release/main/dmg/simplex-*.dmg)"
 
-      # - name: Unix upload binary to release
-      #   if: startsWith(github.ref, 'refs/tags/v') && matrix.os != 'windows-latest'
-      #   uses: svenstaro/upload-release-action@v2
-      #   with:
-      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
-      #     file: ${{ steps.unix_cli_build.outputs.bin_path }}
-      #     asset_name: ${{ matrix.asset_name }}
-      #     tag: ${{ github.ref }}
+      - name: Unix upload binary to release
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.os != 'windows-latest'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ steps.unix_cli_build.outputs.bin_path }}
+          asset_name: ${{ matrix.asset_name }}
+          tag: ${{ github.ref }}
 
       - name: Linux upload desktop package to release
         if: startsWith(github.ref, 'refs/tags/v') && (matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04')
@@ -193,12 +182,12 @@ jobs:
           tag: ${{ github.ref }}
 
       - name: Linux upload AppImage to release
-        if: startsWith(github.ref, 'refs/tags/v') && (matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04')
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-22.04'
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ steps.linux_appimage_build.outputs.appimage_path }}
-          asset_name: ${{ matrix.appimage_asset_name }}
+          asset_name: simplex-desktop-x86_64.AppImage
           tag: ${{ github.ref }}
 
       - name: Mac upload desktop package to release
@@ -217,23 +206,29 @@ jobs:
       # * In powershell multiline commands do not fail if individual commands fail - https://github.community/t/multiline-commands-on-windows-do-not-fail-if-individual-commands-fail/16753
       # * And GitHub Actions does not support parameterizing shell in a matrix job - https://github.community/t/using-matrix-to-specify-shell-is-it-possible/17065
 
-      # - name: Windows build
-      #   id: windows_build
-      #   if: matrix.os == 'windows-latest'
-      #   shell: cmd
-      #   run: |
-      #     cabal build --enable-tests
-      #     cabal list-bin simplex-chat > tmp_bin_path
-      #     set /p bin_path= < tmp_bin_path
-      #     echo ::set-output name=bin_path::%bin_path%
+      - name: Windows build
+        id: windows_build
+        if: matrix.os == 'windows-latest'
+        shell: cmd
+        run: |
+          cabal build --enable-tests
+          cabal list-bin simplex-chat > tmp_bin_path
+          set /p bin_path= < tmp_bin_path
+          echo ::set-output name=bin_path::%bin_path%
 
-      # - name: Windows upload binary to release
-      #   if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
-      #   uses: svenstaro/upload-release-action@v2
-      #   with:
-      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
-      #     file: ${{ steps.windows_build.outputs.bin_path }}
-      #     asset_name: ${{ matrix.asset_name }}
-      #     tag: ${{ github.ref }}
+      - name: Windows upload binary to release
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ steps.windows_build.outputs.bin_path }}
+          asset_name: ${{ matrix.asset_name }}
+          tag: ${{ github.ref }}
 
       # Windows /
+
+      - name: Unix test
+        if: matrix.os != 'windows-latest'
+        timeout-minutes: 30
+        shell: bash
+        run: cabal test --test-show-details=direct
