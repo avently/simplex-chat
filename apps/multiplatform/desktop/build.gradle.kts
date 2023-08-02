@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.util.capitalizeDecapitalize.toLowerCaseAsciiOnly
 
 plugins {
   kotlin("multiplatform")
@@ -43,10 +44,12 @@ compose {
         modules("jdk.zipfs")
         //includeAllModules = true
         outputBaseDir.set(project.file("../release"))
-        targetFormats(
-          TargetFormat.Deb, TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe
-          //, TargetFormat.AppImage // Gradle doesn't sync on Mac with it
-        )
+        val formats = mutableSetOf(TargetFormat.Deb, TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe)
+        if (machines.host.name.toLowerCaseAsciiOnly().contains("linux")) {
+          // Gradle doesn't sync on Mac with it
+          formats.add(TargetFormat.AppImage)
+        }
+        targetFormats = formats
         linux {
           iconFile.set(project.file("src/jvmMain/resources/distribute/simplex.png"))
           appCategory = "Messenger"
