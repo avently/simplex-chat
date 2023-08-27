@@ -10,6 +10,9 @@ echo "desktop.mac.notarization.password=$APPLE_SIMPLEX_NOTARIZATION_PASSWORD" >>
 echo "desktop.mac.notarization.team_id=5NN7GUYB6T" >> apps/multiplatform/local.properties
 echo "$APPLE_SIMPLEX_SIGNING_KEYCHAIN" | base64 --decode - > /tmp/simplex.keychain
 
+ping -c 2 time.apple.com
+/usr/bin/codesign -vvvv --timestamp --options runtime --force --prefix "chat.simplex." --sign "Developer ID Application: SimpleX Chat Ltd (5NN7GUYB6T)" --keychain /tmp/simplex.keychain /Users/runner/work/simplex-chat/simplex-chat/apps/multiplatform/local.properties
+
 scripts/desktop/build-lib-mac.sh
 cd apps/multiplatform
 ./gradlew packageDmg
