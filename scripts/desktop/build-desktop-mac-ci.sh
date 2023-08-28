@@ -19,7 +19,8 @@ security unlock-keychain -p "" /tmp/simplex.keychain
 echo 3
 #security find-certificate -a -c "Developer ID Application: SimpleX Chat Ltd" /tmp/simplex.keychain
 security list-keychains
-security dump-trust-settings
+security list-keychains -s `security list-keychains | xargs` /tmp/simplex.keychain
+security list-keychains
 security dump-keychain /tmp/simplex.keychain | grep alis
 security dump-keychain /tmp/simplex.keychain | grep "00000001 <blob>"
 /usr/bin/codesign -vvvv --timestamp --options runtime --force --prefix "chat.simplex." --sign "Developer ID Application: SimpleX Chat Ltd (5NN7GUYB6T)" --keychain /tmp/simplex.keychain /Users/runner/work/simplex-chat/simplex-chat/apps/multiplatform/local.properties || true
