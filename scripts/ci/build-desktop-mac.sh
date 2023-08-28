@@ -19,3 +19,4 @@ cd apps/multiplatform
 ./gradlew packageDmg
 ./gradlew notarizeDmg
  
+ 
