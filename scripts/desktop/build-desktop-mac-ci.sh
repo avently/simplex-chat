@@ -18,7 +18,7 @@ open -a "Keychain Access" /tmp/simplex.keychain
 security unlock-keychain -p "" /tmp/simplex.keychain
 echo 3
 #security find-certificate -a -c "Developer ID Application: SimpleX Chat Ltd" /tmp/simplex.keychain
-security list-keychans
+security list-keychains
 security dump-trust-settings
 security dump-keychain /tmp/simplex.keychain | grep alis
 security dump-keychain /tmp/simplex.keychain | grep "00000001 <blob>"
