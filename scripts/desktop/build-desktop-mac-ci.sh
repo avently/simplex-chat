@@ -12,14 +12,21 @@ echo "$APPLE_SIMPLEX_SIGNING_KEYCHAIN" | base64 --decode - > /tmp/simplex.keycha
 
 date
 echo 1
-security find-certificate -a -c "Developer ID Application: SimpleX Chat Ltd" /tmp/simplex.keychain
+#security find-certificate -a -c "Developer ID Application: SimpleX Chat Ltd" /tmp/simplex.keychain
 echo 2
 open -a "Keychain Access" /tmp/simplex.keychain
 security unlock-keychain -p "" /tmp/simplex.keychain
 echo 3
-security find-certificate -a -c "Developer ID Application: SimpleX Chat Ltd" /tmp/simplex.keychain
-/usr/bin/codesign -vvvv --timestamp --options runtime --force --prefix "chat.simplex." --sign "Developer ID Application: SimpleX Chat Ltd (5NN7GUYB6T)adasd" --keychain /tmp/simplex.keychain /Users/runner/work/simplex-chat/simplex-chat/apps/multiplatform/local.properties
-
+#security find-certificate -a -c "Developer ID Application: SimpleX Chat Ltd" /tmp/simplex.keychain
+security list-keychans
+security dump-trust-settings
+security dump-keychain /tmp/simplex.keychain | grep alis
+security dump-keychain /tmp/simplex.keychain | grep "00000001 <blob>"
+/usr/bin/codesign -vvvv --timestamp --options runtime --force --prefix "chat.simplex." --sign "Developer ID Application: SimpleX Chat Ltd (5NN7GUYB6T)" --keychain /tmp/simplex.keychain /Users/runner/work/simplex-chat/simplex-chat/apps/multiplatform/local.properties || true
+/usr/bin/codesign -vvvv --timestamp --options runtime --force --prefix "chat.simplex." --sign "Developer ID Application: SimpleX Chat Ltd (5NN7GUYB6T)adasd" --keychain /tmp/simplex.keyc /Users/runner/work/simplex-chat/simplex-chat/apps/multiplatform/local.properties || true
+/usr/bin/codesign -vvvv --timestamp --options runtime --force --prefix "chat.simplex." --sign "Developer ID Application: SimpleX Chat Ltd (5NN7GUYB6T)adasd" --keychain /tmp/simplex.keychain /Users/runner/work/simplex-chat/simplex-chat/apps/multiplatform/local.properties || true
+/usr/bin/codesign -vvvv --timestamp --options runtime --force --prefix "chat.simplex." --sign "Developer ID Application: SimpleX Chat Ltd (5NN7GUYB6T)adasd" --keychain /tmp/simplex.keychain /Users/runner/work/simplex-chat/simplex-chat/apps/multiplatform/properties || true
+codesign -vvvv --sign "Developer ID Application: SimpleX Chat Ltd (5NN7GUYB6T)" --keychain /tmp/simplex.keychain /Users/runner/work/simplex-chat/simplex-chat/apps/multiplatform/local.properties || true
 scripts/desktop/build-lib-mac.sh
 cd apps/multiplatform
 ./gradlew packageDmg
