@@ -146,7 +146,7 @@ jobs:
         with:
           append_body: true
           body: |
-            ${{ steps.hashes.outputs.bin_hash }}
+            ${{ steps.unix_cli_build.outputs.bin_hash }}
 
       - name: Setup Java
         if: startsWith(github.ref, 'refs/tags/v')
@@ -209,7 +209,7 @@ jobs:
         with:
           append_body: true
           body: |
-            ${{ steps.hashes.outputs.package_hash }}
+            ${{ steps.linux_desktop_build.outputs.package_hash }}
 
       - name: Linux upload AppImage to release
         if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-20.04'
@@ -228,7 +228,7 @@ jobs:
         with:
           append_body: true
           body: |
-            ${{ steps.hashes.outputs.appimage_hash }}
+            ${{ steps.linux_appimage_build.outputs.appimage_hash }}
 
       - name: Mac upload desktop package to release
         if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'macos-latest'
@@ -238,6 +238,16 @@ jobs:
           file: ${{ steps.mac_desktop_build.outputs.package_path }}
           asset_name: ${{ matrix.desktop_asset_name }}
           tag: ${{ github.ref }}
+
+      - name: Mac update desktop package hash
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'macos-latest'
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          append_body: true
+          body: |
+            ${{ steps.mac_desktop_build.outputs.package_hash }}
 
       - name: Unix test
         if: matrix.os != 'windows-latest'
@@ -280,6 +290,6 @@ jobs:
         with:
           append_body: true
           body: |
-            ${{ steps.hashes.outputs.bin_hash }}
+            ${{ steps.windows_build.outputs.bin_hash }}
 
       # Windows /
