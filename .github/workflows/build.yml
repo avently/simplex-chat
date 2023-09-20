@@ -66,6 +66,28 @@ jobs:
             asset_name: simplex-chat-windows-x86-64
             desktop_asset_name: simplex-desktop-windows-x86_64.msi
     steps:
+
+      - name: Hashes
+        id: hashes
+        shell: bash
+        run: |
+          echo a > test
+          echo "cli_hash=$(openssl sha512 test)" >> $GITHUB_OUTPUT
+
+      - name: Test
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          append_body: true
+          body: |
+            ${{ steps.hashes.outputs.cli_hash }}
+
+      - name: Exit
+        shell: bash
+        run: |
+          exit 1
+
       - name: Configure pagefile (Windows)
         if: matrix.os == 'windows-latest'
         uses: al-cheb/configure-pagefile-action@v1.3
