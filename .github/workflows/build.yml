@@ -75,7 +75,6 @@ jobs:
           echo "cli_hash=$(openssl sha512 test)" >> $GITHUB_OUTPUT
           echo "appimage_hash=$(openssl sha512 test)" >> $GITHUB_OUTPUT
           echo "desktop_hash=$(openssl sha512 test)" >> $GITHUB_OUTPUT
-          exit 1
 
       - name: update release
         id: update_release
