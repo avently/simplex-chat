@@ -82,7 +82,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          is_append_body: true
+          isAppendBody: true
           body: |
             ${{ steps.hashes.outputs.cli_hash }}
             ${{ steps.hashes.outputs.appimage_hash }}
