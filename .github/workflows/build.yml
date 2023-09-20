@@ -66,36 +66,6 @@ jobs:
             asset_name: simplex-chat-windows-x86-64
             desktop_asset_name: simplex-desktop-windows-x86_64.msi
     steps:
-      - name: Hashes
-        id: hashes
-        shell: bash
-        run: |
-          echo a > test
-          openssl sha512 test
-          echo "cli_hash=$(openssl sha512 test)" >> $GITHUB_OUTPUT
-          echo "appimage_hash=$(openssl sha512 test)" >> $GITHUB_OUTPUT
-          echo "desktop_hash=$(openssl sha512 test)" >> $GITHUB_OUTPUT
-
-      - name: update release
-        id: update_release
-        uses: tubone24/update_release@v1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          isAppendBody: true
-          body: |
-            
-            ${{ steps.hashes.outputs.cli_hash }}
-            
-            ${{ steps.hashes.outputs.appimage_hash }}
-            
-            ${{ steps.hashes.outputs.desktop_hash }}
-
-      - name: Just exit
-        shell: bash
-        run: |
-          exit 1
-
       - name: Configure pagefile (Windows)
         if: matrix.os == 'windows-latest'
         uses: al-cheb/configure-pagefile-action@v1.3
@@ -167,7 +137,7 @@ jobs:
           file: ${{ steps.unix_cli_build.outputs.bin_path }}
           asset_name: ${{ matrix.asset_name }}
           tag: ${{ github.ref }}
-
+      
       - name: Unix update CLI binary hash
         if: startsWith(github.ref, 'refs/tags/v') && matrix.os != 'windows-latest'
         uses: tubone24/update_release@v1.0
@@ -176,7 +146,6 @@ jobs:
         with:
           isAppendBody: true
           body: |
-            
             ${{ steps.hashes.outputs.bin_hash }}
 
       - name: Setup Java
@@ -240,7 +209,6 @@ jobs:
         with:
           isAppendBody: true
           body: |
-          
             ${{ steps.hashes.outputs.package_hash }}
 
       - name: Linux upload AppImage to release
@@ -260,7 +228,6 @@ jobs:
         with:
           isAppendBody: true
           body: |
-            
             ${{ steps.hashes.outputs.appimage_hash }}
 
       - name: Mac upload desktop package to release
@@ -304,7 +271,7 @@ jobs:
           file: ${{ steps.windows_build.outputs.bin_path }}
           asset_name: ${{ matrix.asset_name }}
           tag: ${{ github.ref }}
-
+      
       - name: Windows update CLI binary hash
         if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
         uses: tubone24/update_release@v1.0
@@ -313,7 +280,6 @@ jobs:
         with:
           isAppendBody: true
           body: |
-            
             ${{ steps.hashes.outputs.bin_hash }}
 
       # Windows /
