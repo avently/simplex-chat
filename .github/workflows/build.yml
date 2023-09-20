@@ -66,6 +66,34 @@ jobs:
             asset_name: simplex-chat-windows-x86-64
             desktop_asset_name: simplex-desktop-windows-x86_64.msi
     steps:
+      - name: Hashes
+        id: hashes
+        shell: bash
+        run: |
+          echo a > test
+          openssl sha512 test
+          echo "cli_hash=$(openssl sha512 test)" >> $GITHUB_OUTPUT
+          echo "appimage_hash=$(openssl sha512 test)" >> $GITHUB_OUTPUT
+          echo "desktop_hash=$(openssl sha512 test)" >> $GITHUB_OUTPUT
+          exit 1
+
+      - name: update release
+        id: update_release
+        uses: tubone24/update_release@v1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          is_append_body: true
+          body: |
+            ${{ steps.hashes.outputs.cli_hash }}
+            ${{ steps.hashes.outputs.appimage_hash }}
+            ${{ steps.hashes.outputs.desktop_hash }}
+
+      - name: Just exit
+        shell: bash
+        run: |
+          exit 1
+
       - name: Configure pagefile (Windows)
         if: matrix.os == 'windows-latest'
         uses: al-cheb/configure-pagefile-action@v1.3
