@@ -50,18 +50,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
-            cache_path: ~/.cabal/store
-            asset_name: simplex-chat-ubuntu-20_04-x86-64
-            desktop_asset_name: simplex-desktop-ubuntu-20_04-x86_64.deb
-          - os: ubuntu-22.04
-            cache_path: ~/.cabal/store
-            asset_name: simplex-chat-ubuntu-22_04-x86-64
-            desktop_asset_name: simplex-desktop-ubuntu-22_04-x86_64.deb
-          - os: macos-latest
-            cache_path: ~/.cabal/store
-            asset_name: simplex-chat-macos-x86-64
-            desktop_asset_name: simplex-desktop-macos-x86_64.dmg
+          # - os: ubuntu-20.04
+          #   cache_path: ~/.cabal/store
+          #   asset_name: simplex-chat-ubuntu-20_04-x86-64
+          #   desktop_asset_name: simplex-desktop-ubuntu-20_04-x86_64.deb
+          # - os: ubuntu-22.04
+          #   cache_path: ~/.cabal/store
+          #   asset_name: simplex-chat-ubuntu-22_04-x86-64
+          #   desktop_asset_name: simplex-desktop-ubuntu-22_04-x86_64.deb
+          # - os: macos-latest
+          #   cache_path: ~/.cabal/store
+          #   asset_name: simplex-chat-macos-x86-64
+          #   desktop_asset_name: simplex-desktop-macos-x86_64.dmg
           - os: windows-latest
             cache_path: C:/cabal
             asset_name: simplex-chat-windows-x86-64
@@ -261,43 +261,41 @@ jobs:
       # / Windows
       # rm -rf dist-newstyle/src/direct-sq* is here because of the bug in cabal's dependency which prevents second build from finishing
 
-      - name: Windows build
-        id: windows_build
-        if: matrix.os == 'windows-latest'
-        shell: bash
-        run: |
-          rm -rf dist-newstyle/src/direct-sq*
-          sed -i "s/, unix /--, unix /" simplex-chat.cabal
-          cabal build --enable-tests
-          rm -rf dist-newstyle/src/direct-sq*
-          path=$(cabal list-bin simplex-chat | tail -n 1)
-          echo "bin_path=$path" >> $GITHUB_OUTPUT
-          echo "bin_hash=$(echo SHA2-512\(${{ matrix.asset_name }}\)= $(openssl sha512 $path | cut -d' ' -f 2))" >> $GITHUB_OUTPUT
+      # - name: Windows build
+      #   id: windows_build
+      #   if: matrix.os == 'windows-latest'
+      #   shell: bash
+      #   run: |
+      #     rm -rf dist-newstyle/src/direct-sq*
+      #     sed -i "s/, unix /--, unix /" simplex-chat.cabal
+      #     cabal build --enable-tests
+      #     rm -rf dist-newstyle/src/direct-sq*
+      #     path=$(cabal list-bin simplex-chat | tail -n 1)
+      #     echo "bin_path=$path" >> $GITHUB_OUTPUT
+      #     echo "bin_hash=$(echo SHA2-512\(${{ matrix.asset_name }}\)= $(openssl sha512 $path | cut -d' ' -f 2))" >> $GITHUB_OUTPUT
 
-      - name: Windows upload CLI binary to release
-        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ steps.windows_build.outputs.bin_path }}
-          asset_name: ${{ matrix.asset_name }}
-          tag: ${{ github.ref }}
+      # - name: Windows upload CLI binary to release
+      #   if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
+      #   uses: svenstaro/upload-release-action@v2
+      #   with:
+      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+      #     file: ${{ steps.windows_build.outputs.bin_path }}
+      #     asset_name: ${{ matrix.asset_name }}
+      #     tag: ${{ github.ref }}
 
-      - name: Windows update CLI binary hash
-        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          append_body: true
-          body: |
-            ${{ steps.windows_build.outputs.bin_hash }}
+      # - name: Windows update CLI binary hash
+      #   if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
+      #   uses: softprops/action-gh-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     append_body: true
+      #     body: |
+      #       ${{ steps.windows_build.outputs.bin_hash }}
 
       - name: Windows build desktop
         id: windows_desktop_build
         if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
-        env:
-          SIMPLEX_CI_REPO_URL: ${{ secrets.SIMPLEX_CI_REPO_URL }}
         shell: bash
         run: |
           scripts/desktop/build-lib-windows.sh
