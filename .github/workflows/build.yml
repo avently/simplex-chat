@@ -301,10 +301,10 @@ jobs:
           update: true
           install: >-
             git
-            make
             perl
           pacboy: >-
             toolchain:p
+            make:p
             cmake:p
 
       - name: Windows build desktop
@@ -312,6 +312,16 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
         shell: msys2 {0}
         run: |
+          echo $PATH
+          which make || true
+          which cmake || true
+          ls /bin || true
+          ls /mingw64/bin || true
+          rm /bin/make.exe || true
+          rm /mingw64/bin/make.exe || true
+          ln -s /mingw64/bin/mingw32-make.exe /mingw64/bin/make.exe 2>/dev/null || true
+          which make
+          which cmake
           export PATH=$PATH:/c/ghcup/bin
           scripts/desktop/build-lib-windows.sh
           cd apps/multiplatform
