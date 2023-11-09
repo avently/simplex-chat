@@ -293,10 +293,23 @@ jobs:
       #     body: |
       #       ${{ steps.windows_build.outputs.bin_hash }}
 
+      - name: 'Setup MSYS2'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: mingw64
+          update: true
+          install: >-
+            git
+            make
+            perl
+          pacboy: >-
+            toolchain:p
+            cmake:p
+
       - name: Windows build desktop
         id: windows_desktop_build
         if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
-        shell: bash
+        shell: msys2 {0}
         run: |
           scripts/desktop/build-lib-windows.sh
           cd apps/multiplatform
