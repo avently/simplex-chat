@@ -17,6 +17,13 @@ fi
 
 BUILD_DIR=dist-newstyle/build/$ARCH-$OS/ghc-*/simplex-chat-*
 
+# IMPORTANT: in order to get a working build you should use x86_64 MinGW with cmake, make, gcc.
+# 100% working MinGW is https://github.com/brechtsanders/winlibs_mingw/releases/download/13.1.0-16.0.5-11.0.0-ucrt-r5/winlibs-x86_64-posix-seh-gcc-13.1.0-mingw-w64ucrt-11.0.0-r5.zip
+# Many other distributions I tested don't work in some cases or don't have required tools.
+# Also, standalone Cmake installed globally via .msi package does not produce working library, you should use MinGW's Cmake.
+# Example of export:
+# export PATH=/c/MinGW/bin:/c/ghcup/bin:/c/Program\ Files/Amazon\ Corretto/jdk17.0.9_8/bin/:$PATH
+
 cd $root_dir
 mkdir dist-newstyle 2>/dev/null || true
 
