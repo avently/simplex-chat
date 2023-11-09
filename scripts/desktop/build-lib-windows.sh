@@ -34,7 +34,7 @@ if [ ! -f dist-newstyle/openssl-1.1.1w/libcrypto-1_1-x64.dll ]; then
 	cd openssl-1.1.1w
 	./Configure mingw64
 	make
-	cd -
+	cd ../../
 fi
 openssl_windows_style_path=$(echo `pwd`/dist-newstyle/openssl-1.1.1w | sed 's#/\([a-z]\)#\1:#' | sed 's#/#\\#g')
 rm -rf $BUILD_DIR 2>/dev/null || true
