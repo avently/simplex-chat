@@ -283,10 +283,10 @@ jobs:
         shell: msys2 {0}
         run: |
           export PATH=$PATH:/c/ghcup/bin
-          echo $PATH
-          env
           ls /c/ghcup/bin/
-          tree /c/ghcup/bin
+          which ghc
+          ghc --version
+          export PATH=$PATH:/c/tools/ghc-9.6.3/bin
           which ghc
           ghc --version
           #scripts/desktop/prepare-openssl-windows.sh
