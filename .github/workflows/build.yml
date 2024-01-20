@@ -282,12 +282,12 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: msys2 {0}
         run: |
-          export PATH=$PATH:/c/ghcup/bin:/c/tools/ghc-9.6.3/bin
+          export PATH=$PATH:/c/ghcup/bin:$(echo /c/tools/ghc-*/bin || echo)
           ls /c/ghcup/bin/
           echo ghc tools
           ls /c/tools/ghc-9.6.3/bin
-          which ghc || true
-          ghc --version || true
+          which ghc
+          ghc --version
           #scripts/desktop/prepare-openssl-windows.sh
           #openssl_windows_style_path=$(echo `pwd`/dist-newstyle/openssl-1.1.1w | sed 's#/\([a-zA-Z]\)#\1:#' | sed 's#/#\\#g')
           rm cabal.project.local 2>/dev/null || true
