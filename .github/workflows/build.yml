@@ -51,18 +51,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
-            cache_path: ~/.cabal/store
-            asset_name: simplex-chat-ubuntu-20_04-x86-64
-            desktop_asset_name: simplex-desktop-ubuntu-20_04-x86_64.deb
-          - os: ubuntu-22.04
-            cache_path: ~/.cabal/store
-            asset_name: simplex-chat-ubuntu-22_04-x86-64
-            desktop_asset_name: simplex-desktop-ubuntu-22_04-x86_64.deb
-          - os: macos-latest
-            cache_path: ~/.cabal/store
-            asset_name: simplex-chat-macos-x86-64
-            desktop_asset_name: simplex-desktop-macos-x86_64.dmg
+          # - os: ubuntu-20.04
+          #   cache_path: ~/.cabal/store
+          #   asset_name: simplex-chat-ubuntu-20_04-x86-64
+          #   desktop_asset_name: simplex-desktop-ubuntu-20_04-x86_64.deb
+          # - os: ubuntu-22.04
+          #   cache_path: ~/.cabal/store
+          #   asset_name: simplex-chat-ubuntu-22_04-x86-64
+          #   desktop_asset_name: simplex-desktop-ubuntu-22_04-x86_64.deb
+          # - os: macos-latest
+          #   cache_path: ~/.cabal/store
+          #   asset_name: simplex-chat-macos-x86-64
+          #   desktop_asset_name: simplex-desktop-macos-x86_64.dmg
           - os: windows-latest
             cache_path: C:/cabal
             asset_name: simplex-chat-windows-x86-64
@@ -150,13 +150,13 @@ jobs:
           body: |
             ${{ steps.unix_cli_build.outputs.bin_hash }}
 
-      - name: Setup Java
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'corretto'
-          java-version: '17'
-          cache: 'gradle'
+      # - name: Setup Java
+      #   if: startsWith(github.ref, 'refs/tags/v')
+      #   uses: actions/setup-java@v3
+      #   with:
+      #     distribution: 'corretto'
+      #     java-version: '17'
+      #     cache: 'gradle'
 
       - name: Linux build desktop
         id: linux_desktop_build
@@ -283,8 +283,14 @@ jobs:
         shell: msys2 {0}
         run: |
           export PATH=$PATH:/c/ghcup/bin
-          scripts/desktop/prepare-openssl-windows.sh
-          openssl_windows_style_path=$(echo `pwd`/dist-newstyle/openssl-1.1.1w | sed 's#/\([a-zA-Z]\)#\1:#' | sed 's#/#\\#g')
+          echo $PATH
+          env
+          ls /c/ghcup/bin/
+          tree /c/ghcup/bin
+          which ghc
+          ghc --version
+          #scripts/desktop/prepare-openssl-windows.sh
+          #openssl_windows_style_path=$(echo `pwd`/dist-newstyle/openssl-1.1.1w | sed 's#/\([a-zA-Z]\)#\1:#' | sed 's#/#\\#g')
           rm cabal.project.local 2>/dev/null || true
           echo "ignore-project: False" >> cabal.project.local
           echo "package direct-sqlcipher" >> cabal.project.local
