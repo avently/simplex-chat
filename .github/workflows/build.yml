@@ -51,24 +51,24 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
-            ghc: "8.10.7"
-            cache_path: ~/.cabal/store
-          - os: ubuntu-20.04
-            ghc: "9.6.3"
-            cache_path: ~/.cabal/store
-            asset_name: simplex-chat-ubuntu-20_04-x86-64
-            desktop_asset_name: simplex-desktop-ubuntu-20_04-x86_64.deb
-          - os: ubuntu-22.04
-            ghc: "9.6.3"
-            cache_path: ~/.cabal/store
-            asset_name: simplex-chat-ubuntu-22_04-x86-64
-            desktop_asset_name: simplex-desktop-ubuntu-22_04-x86_64.deb
-          - os: macos-latest
-            ghc: "9.6.3"
-            cache_path: ~/.cabal/store
-            asset_name: simplex-chat-macos-x86-64
-            desktop_asset_name: simplex-desktop-macos-x86_64.dmg
+          # - os: ubuntu-20.04
+          #   ghc: "8.10.7"
+          #   cache_path: ~/.cabal/store
+          # - os: ubuntu-20.04
+          #   ghc: "9.6.3"
+          #   cache_path: ~/.cabal/store
+          #   asset_name: simplex-chat-ubuntu-20_04-x86-64
+          #   desktop_asset_name: simplex-desktop-ubuntu-20_04-x86_64.deb
+          # - os: ubuntu-22.04
+          #   ghc: "9.6.3"
+          #   cache_path: ~/.cabal/store
+          #   asset_name: simplex-chat-ubuntu-22_04-x86-64
+          #   desktop_asset_name: simplex-desktop-ubuntu-22_04-x86_64.deb
+          # - os: macos-latest
+          #   ghc: "9.6.3"
+          #   cache_path: ~/.cabal/store
+          #   asset_name: simplex-chat-macos-x86-64
+          #   desktop_asset_name: simplex-desktop-macos-x86_64.dmg
           - os: windows-latest
             ghc: "9.6.3"
             cache_path: C:/cabal
@@ -294,47 +294,47 @@ jobs:
             cmake:p
 
 
-      - name: Windows build
-        id: windows_build
-        if: matrix.os == 'windows-latest'
-        shell: msys2 {0}
-        run: |
-          export PATH=$PATH:/c/ghcup/bin:$(echo /c/tools/ghc-*/bin || echo)
-          scripts/desktop/prepare-openssl-windows.sh
-          openssl_windows_style_path=$(echo `pwd`/dist-newstyle/openssl-1.1.1w | sed 's#/\([a-zA-Z]\)#\1:#' | sed 's#/#\\#g')
-          rm cabal.project.local 2>/dev/null || true
-          echo "ignore-project: False" >> cabal.project.local
-          echo "package direct-sqlcipher" >> cabal.project.local
-          echo "    flags: +openssl" >> cabal.project.local
-          echo "    extra-include-dirs: $openssl_windows_style_path\include" >> cabal.project.local
-          echo "    extra-lib-dirs: $openssl_windows_style_path" >> cabal.project.local
+      # - name: Windows build
+      #   id: windows_build
+      #   if: matrix.os == 'windows-latest'
+      #   shell: msys2 {0}
+      #   run: |
+      #     export PATH=$PATH:/c/ghcup/bin:$(echo /c/tools/ghc-*/bin || echo)
+      #     scripts/desktop/prepare-openssl-windows.sh
+      #     openssl_windows_style_path=$(echo `pwd`/dist-newstyle/openssl-1.1.1w | sed 's#/\([a-zA-Z]\)#\1:#' | sed 's#/#\\#g')
+      #     rm cabal.project.local 2>/dev/null || true
+      #     echo "ignore-project: False" >> cabal.project.local
+      #     echo "package direct-sqlcipher" >> cabal.project.local
+      #     echo "    flags: +openssl" >> cabal.project.local
+      #     echo "    extra-include-dirs: $openssl_windows_style_path\include" >> cabal.project.local
+      #     echo "    extra-lib-dirs: $openssl_windows_style_path" >> cabal.project.local
 
-          rm -rf dist-newstyle/src/direct-sq*
-          sed -i "s/, unix /--, unix /" simplex-chat.cabal
-          cabal build --enable-tests
-          rm -rf dist-newstyle/src/direct-sq*
-          path=$(cabal list-bin simplex-chat | tail -n 1)
-          echo "bin_path=$path" >> $GITHUB_OUTPUT
-          echo "bin_hash=$(echo SHA2-512\(${{ matrix.asset_name }}\)= $(openssl sha512 $path | cut -d' ' -f 2))" >> $GITHUB_OUTPUT
+      #     rm -rf dist-newstyle/src/direct-sq*
+      #     sed -i "s/, unix /--, unix /" simplex-chat.cabal
+      #     cabal build --enable-tests
+      #     rm -rf dist-newstyle/src/direct-sq*
+      #     path=$(cabal list-bin simplex-chat | tail -n 1)
+      #     echo "bin_path=$path" >> $GITHUB_OUTPUT
+      #     echo "bin_hash=$(echo SHA2-512\(${{ matrix.asset_name }}\)= $(openssl sha512 $path | cut -d' ' -f 2))" >> $GITHUB_OUTPUT
 
-      - name: Windows upload CLI binary to release
-        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ steps.windows_build.outputs.bin_path }}
-          asset_name: ${{ matrix.asset_name }}
-          tag: ${{ github.ref }}
+      # - name: Windows upload CLI binary to release
+      #   if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
+      #   uses: svenstaro/upload-release-action@v2
+      #   with:
+      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+      #     file: ${{ steps.windows_build.outputs.bin_path }}
+      #     asset_name: ${{ matrix.asset_name }}
+      #     tag: ${{ github.ref }}
 
-      - name: Windows update CLI binary hash
-        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          append_body: true
-          body: |
-            ${{ steps.windows_build.outputs.bin_hash }}
+      # - name: Windows update CLI binary hash
+      #   if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
+      #   uses: softprops/action-gh-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     append_body: true
+      #     body: |
+      #       ${{ steps.windows_build.outputs.bin_hash }}
 
       - name: Windows build desktop
         id: windows_desktop_build
