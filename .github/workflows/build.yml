@@ -129,7 +129,12 @@ jobs:
       - name: Install openssl@1.1 for Mac
         if: matrix.os == 'macos-latest'
         shell: bash
-        run: brew reinstall openssl@1.1
+        run: |
+          brew install openssl@1.1
+          ls /usr/local/opt || true
+          mkdir /usr/local/opt/ || true
+          ln -s /opt/homebrew/opt/openssl@1.1 /usr/local/opt/
+          ls /usr/local/opt
 
       - name: Unix prepare cabal.project.local for Ubuntu
         if: matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04'
