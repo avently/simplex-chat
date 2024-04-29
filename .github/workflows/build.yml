@@ -69,7 +69,7 @@ jobs:
             cache_path: ~/.cabal/store
             asset_name: simplex-chat-macos-aarch64
             desktop_asset_name: simplex-desktop-macos-aarch64.dmg
-          - os: macos-latest-large
+          - os: macos-13
             ghc: "9.6.3"
             cache_path: ~/.cabal/store
             asset_name: simplex-chat-macos-x86-64
@@ -109,7 +109,7 @@ jobs:
       # / Unix
 
       - name: Unix prepare cabal.project.local for Mac
-        if: matrix.os == 'macos-latest' || matrix.os == 'macos-latest-large'
+        if: matrix.os == 'macos-latest' || matrix.os == 'macos-13'
         shell: bash
         run: |
           echo "ignore-project: False"                                         >> cabal.project.local
@@ -123,7 +123,7 @@ jobs:
         run: sudo apt install -y desktop-file-utils
 
       - name: Install pkg-config for Mac
-        if: matrix.os == 'macos-latest' || matrix.os == 'macos-latest-large'
+        if: matrix.os == 'macos-latest' || matrix.os == 'macos-13'
         run: brew install pkg-config
 
       - name: Unix prepare cabal.project.local for Ubuntu
@@ -195,7 +195,7 @@ jobs:
 
       - name: Mac build desktop
         id: mac_desktop_build
-        if: startsWith(github.ref, 'refs/tags/v') && (matrix.os == 'macos-latest' || matrix.os == 'macos-latest-large')
+        if: startsWith(github.ref, 'refs/tags/v') && (matrix.os == 'macos-latest' || matrix.os == 'macos-13')
         shell: bash
         env:
           APPLE_SIMPLEX_SIGNING_KEYCHAIN: ${{ secrets.APPLE_SIMPLEX_SIGNING_KEYCHAIN }}
@@ -246,7 +246,7 @@ jobs:
             ${{ steps.linux_appimage_build.outputs.appimage_hash }}
 
       - name: Mac upload desktop package to release
-        if: startsWith(github.ref, 'refs/tags/v') && (matrix.os == 'macos-latest' || matrix.os == 'macos-latest-large')
+        if: startsWith(github.ref, 'refs/tags/v') && (matrix.os == 'macos-latest' || matrix.os == 'macos-13')
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -255,7 +255,7 @@ jobs:
           tag: ${{ github.ref }}
 
       - name: Mac update desktop package hash
-        if: startsWith(github.ref, 'refs/tags/v') && (matrix.os == 'macos-latest' || matrix.os == 'macos-latest-large')
+        if: startsWith(github.ref, 'refs/tags/v') && (matrix.os == 'macos-latest' || matrix.os == 'macos-13')
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
