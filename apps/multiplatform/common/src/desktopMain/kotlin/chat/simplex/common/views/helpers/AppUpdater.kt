@@ -27,7 +27,8 @@ import java.net.Proxy
 
 @Serializable
 data class GitHubRelease(
-  val id: Long,
+  @SerialName("tag_name")
+  val tagName: String,
   @SerialName("html_url")
   val htmlUrl: String,
   val name: String,
@@ -49,6 +50,39 @@ data class GitHubAsset(
   val isAppImage: Boolean = name.lowercase().contains(".appimage")
 )
 
+fun showAppUpdateNotice() {
+  AlertManager.shared.showAlertDialogButtonsColumn(
+    generalGetString(MR.strings.app_check_for_updates_notice_title),
+    text = generalGetString(MR.strings.app_check_for_updates_notice_desc),
+    buttons = {
+      Column {
+        SectionItemView({
+          AlertManager.shared.hideAlert()
+          appPrefs.appUpdateChannel.set(AppUpdatesChannel.STABLE)
+          setupUpdateChecker()
+        }) {
+          Text(generalGetString(MR.strings.app_check_for_updates_stable), Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = MaterialTheme.colors.primary)
+        }
+
+        SectionItemView({
+          AlertManager.shared.hideAlert()
+          appPrefs.appUpdateChannel.set(AppUpdatesChannel.BETA)
+          setupUpdateChecker()
+        }) {
+          Text(generalGetString(MR.strings.app_check_for_updates_beta), Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = MaterialTheme.colors.primary)
+        }
+
+        SectionItemView({
+          AlertManager.shared.hideAlert()
+          appPrefs.appUpdateChannel.set(AppUpdatesChannel.DISABLED)
+        }) {
+          Text(generalGetString(MR.strings.app_check_for_updates_notice_disable), Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = MaterialTheme.colors.primary)
+        }
+      }
+    }
+  )
+}
+
 private var updateCheckerJob: Job = Job()
 fun setupUpdateChecker() = withLongRunningApi {
   updateCheckerJob.cancel()
@@ -69,10 +103,10 @@ private fun createUpdateJob() {
 
 
 fun checkForUpdate() {
+  Log.d(TAG, "Checking for update")
   val client = setupHttpClient()
   try {
-    // LALAL
-    val request = Request.Builder().url("https://api.github.com/repos/avently/simplex-chat/releases").addHeader("User-agent", "curl").build()
+    val request = Request.Builder().url("https://api.github.com/repos/simplex-chat/simplex-chat/releases").addHeader("User-agent", "curl").build()
     client.newCall(request).execute().use { response ->
       response.body?.use {
         val body = it.string()
@@ -88,11 +122,16 @@ fun checkForUpdate() {
           currentVersionName.substringBefore('-').count { it == '.' } == 1 -> "${currentVersionName}.0"
           else -> currentVersionName
         }
-        // LALAL
-//        if (release.id == appPrefs.appSkippedUpdate.get() || release.name == currentVersionName || release.name == redactedCurrentVersionName) {
-//          return
-//        }
-        val assets = chooseGitHubReleaseAssets(release).ifEmpty { return }
+        if (release.tagName == appPrefs.appSkippedUpdate.get() || release.tagName == currentVersionName || release.tagName == redactedCurrentVersionName) {
+          Log.d(TAG, "Skipping update because of the same version or skipped version")
+          return
+        }
+        val assets = chooseGitHubReleaseAssets(release)
+        // No need to show an alert if no suitable packages were found. But for Flatpak users it's useful to see release notes anyway
+        if (assets.isEmpty() && !isRunningFromFlatpak()) {
+          Log.d(TAG, "No assets to download for current system")
+          return
+        }
         val lines = ArrayList<String>()
         for (line in release.body.lines()) {
           if (line == "Commits:") break
@@ -165,7 +204,7 @@ private fun setupHttpClient(): OkHttpClient {
 }
 
 private fun skipRelease(release: GitHubRelease) {
-  appPrefs.appSkippedUpdate.set(release.id)
+  appPrefs.appSkippedUpdate.set(release.tagName)
 }
 
 private suspend fun downloadAsset(asset: GitHubAsset) {
@@ -194,7 +233,12 @@ private suspend fun downloadAsset(asset: GitHubAsset) {
   try {
     val request = Request.Builder().url(asset.browserDownloadUrl).addHeader("User-agent", "curl").build()
     val call = client.newCall(request)
-    chatModel.updatingRequest = Closeable { call.cancel(); println("LALAL CANCELLED") }
+    chatModel.updatingRequest = Closeable {
+      call.cancel()
+      withApi {
+        showToast(generalGetString(MR.strings.app_check_for_updates_canceled))
+      }
+    }
     call.execute().use { response ->
       response.body?.use { body ->
         body.byteStream().use { stream ->
@@ -208,23 +252,27 @@ private suspend fun downloadAsset(asset: GitHubAsset) {
 
             AlertManager.shared.showAlertDialogButtonsColumn(
               generalGetString(MR.strings.app_check_for_updates_download_completed_title),
-              text = generalGetString(MR.strings.app_check_for_updates_download_completed_desc),
               dismissible = false,
               buttons = {
                 Column {
-                  SectionItemView({
-                    AlertManager.shared.hideAlert()
-                    chatModel.updatingProgress.value = -1f
-                    withLongRunningApi {
-                      try {
-                        installAppUpdate(newFile)
-                      } finally {
-                        chatModel.updatingProgress.value = null
+                  // It's problematic to install .deb package because it requires either root or GUI package installer which is not available on
+                  // Debian by default. Let the user install it manually only
+                  if (!asset.name.lowercase().endsWith(".deb")) {
+                    SectionItemView({
+                      AlertManager.shared.hideAlert()
+                      chatModel.updatingProgress.value = -1f
+                      withLongRunningApi {
+                        try {
+                          installAppUpdate(newFile)
+                        } finally {
+                          chatModel.updatingProgress.value = null
+                        }
                       }
+                    }) {
+                      Text(generalGetString(MR.strings.app_check_for_updates_button_install), Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = MaterialTheme.colors.primary)
                     }
-                  }) {
-                    Text(generalGetString(MR.strings.app_check_for_updates_button_install), Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = MaterialTheme.colors.primary)
                   }
+
                   SectionItemView({
                     desktopOpenDir(newFile.parentFile)
                   }) {
@@ -249,12 +297,14 @@ private suspend fun downloadAsset(asset: GitHubAsset) {
   }
 }
 
+private fun isRunningFromFlatpak(): Boolean = System.getenv("container") == "flatpak"
 
 private fun chooseGitHubReleaseAssets(release: GitHubRelease): List<GitHubAsset> {
-  val process = Runtime.getRuntime().exec("which dpkg").onExit().join()
-  val isDebianBased = process.exitValue() == 0
-  // Show all available .deb packages and user will choose the one that works on his system
-  val res = if (isDebianBased) {
+  val res = if (isRunningFromFlatpak()) {
+    // No need to show download options for Flatpak users
+    emptyList()
+  } else if (Runtime.getRuntime().exec("which dpkg").onExit().join().exitValue() == 0) {
+    // Show all available .deb packages and user will choose the one that works on his system (for Debian derivatives)
     release.assets.filter { it.name.lowercase().endsWith(".deb") }
   } else {
     release.assets.filter { it.name == desktopPlatform.githubAssetName }
@@ -272,9 +322,10 @@ private suspend fun installAppUpdate(file: File) = withContext(Dispatchers.IO) {
         // Failed to start installation. show directory with the file for manual installation
         desktopOpenDir(file.parentFile)
       } else {
-        withApi {
-          ntfManager.showMessage(generalGetString(MR.strings.app_check_for_updates_installed_successfully_title), generalGetString(MR.strings.app_check_for_updates_installed_successfully_desc))
-        }
+        AlertManager.shared.showAlertMsg(
+          title = generalGetString(MR.strings.app_check_for_updates_installed_successfully_title),
+          text = generalGetString(MR.strings.app_check_for_updates_installed_successfully_desc)
+        )
         file.delete()
       }
     }
@@ -286,9 +337,10 @@ private suspend fun installAppUpdate(file: File) = withContext(Dispatchers.IO) {
         // Failed to start installation. show directory with the file for manual installation
         desktopOpenDir(file.parentFile)
       } else {
-        withApi {
-          ntfManager.showMessage(generalGetString(MR.strings.app_check_for_updates_installed_successfully_title), generalGetString(MR.strings.app_check_for_updates_installed_successfully_desc))
-        }
+        AlertManager.shared.showAlertMsg(
+          title = generalGetString(MR.strings.app_check_for_updates_installed_successfully_title),
+          text = generalGetString(MR.strings.app_check_for_updates_installed_successfully_desc)
+        )
         file.delete()
       }
     }
@@ -309,9 +361,10 @@ private suspend fun installAppUpdate(file: File) = withContext(Dispatchers.IO) {
           // Failed to start installation. show directory with the file for manual installation
           desktopOpenDir(file.parentFile)
         } else {
-          withApi {
-            ntfManager.showMessage(generalGetString(MR.strings.app_check_for_updates_installed_successfully_title), generalGetString(MR.strings.app_check_for_updates_installed_successfully_desc))
-          }
+          AlertManager.shared.showAlertMsg(
+            title = generalGetString(MR.strings.app_check_for_updates_installed_successfully_title),
+            text = generalGetString(MR.strings.app_check_for_updates_installed_successfully_desc)
+          )
           file.delete()
         }
       } finally {
