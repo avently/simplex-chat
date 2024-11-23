@@ -154,6 +154,10 @@ jobs:
         if: matrix.os == 'macos-13'
         run: brew install pkg-config
 
+      - name: Install openssl@3.0 for Mac
+        if: matrix.os == 'macos-latest' || matrix.os == 'macos-13'
+        run: brew install openssl@3.0
+
       - name: Unix prepare cabal.project.local for Ubuntu
         if: matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04'
         shell: bash
