@@ -151,7 +151,7 @@ jobs:
         run: sudo apt install -y desktop-file-utils
 
       - name: Install pkg-config for Mac
-        if: matrix.os == 'macos-latest' || matrix.os == 'macos-13'
+        if: matrix.os == 'macos-13'
         run: brew install pkg-config
 
       - name: Unix prepare cabal.project.local for Ubuntu
